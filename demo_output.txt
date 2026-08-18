@@ -1,0 +1,68 @@
+
+=== DEMO: existing user 86742 ===
+                                   title                           genres  user_rating
+               Fifth Element, The (1997)   Action|Adventure|Comedy|Sci-Fi          5.0
+Shall We Dance? (Shall We Dansu?) (1996)             Comedy|Drama|Romance          5.0
+        Mirror Has Two Faces, The (1996)             Comedy|Drama|Romance          5.0
+               Breaking the Waves (1996)                    Drama|Mystery          5.0
+         Star Trek: First Contact (1996) Action|Adventure|Sci-Fi|Thriller          5.0
+                             Jaws (1975)                    Action|Horror          5.0
+                    Jerry Maguire (1996)                    Drama|Romance          5.0
+                            Evita (1996)                    Drama|Musical          5.0
+ rank                                                          title                      genres  pred_rating  n_ratings                                                                                     why
+    1 Léon: The Professional (a.k.a. The Professional) (Léon) (1994) Action|Crime|Drama|Thriller         4.26      28909          because you watched 'True Romance (1993)'; matches your taste for Drama/Action
+    2                                             Being There (1979)                Comedy|Drama         4.33       5209      because you watched 'Harold and Maude (1971)'; matches your taste for Drama/Comedy
+    3                              Man Who Would Be King, The (1975)             Adventure|Drama         4.35       2760 because you watched 'Lawrence of Arabia (1962)'; matches your taste for Drama/Adventure
+    4                                           All About Eve (1950)                       Drama         4.56       4268    because you watched 'Streetcar Named Desire, A (1951)'; matches your taste for Drama
+    5                                   Cat on a Hot Tin Roof (1958)                       Drama         4.32       2288    because you watched 'Streetcar Named Desire, A (1951)'; matches your taste for Drama
+    6                                       Elephant Man, The (1980)                       Drama         4.39       5719                  because you watched 'Blue Velvet (1986)'; matches your taste for Drama
+    7                                  Last Picture Show, The (1971)                       Drama         4.35       2206             because you watched 'Five Easy Pieces (1970)'; matches your taste for Drama
+    8                                              Unforgiven (1992)               Drama|Western         4.35      12157              because you watched 'Unforgiven, The (1960)'; matches your taste for Drama
+    9                                River Runs Through It, A (1992)                       Drama         4.11       4394          because you watched 'Legends of the Fall (1994)'; matches your taste for Drama
+   10                                            Mission, The (1986)                       Drama         4.17       1855                         because you watched 'Reds (1981)'; matches your taste for Drama
+
+=== similar to Toy Story (1995) ===
+         matched  rank                 title                                              genres  content_sim  collab_sim
+Toy Story (1995)     1    Toy Story 2 (1999)         Adventure|Animation|Children|Comedy|Fantasy        1.000       0.236
+Toy Story (1995)     2 Monsters, Inc. (2001)         Adventure|Animation|Children|Comedy|Fantasy        0.844       0.136
+Toy Story (1995)     3    Toy Story 3 (2010)    Adventure|Animation|Children|Comedy|Fantasy|IMAX        0.786       0.129
+Toy Story (1995)     4   Finding Nemo (2003)                 Adventure|Animation|Children|Comedy        0.736       0.118
+Toy Story (1995)     5  Bug's Life, A (1998)                 Adventure|Animation|Children|Comedy        0.788       0.106
+Toy Story (1995)     6          Shrek (2001) Adventure|Animation|Children|Comedy|Fantasy|Romance        0.790       0.087
+Toy Story (1995)     7        Aladdin (1992)         Adventure|Animation|Children|Comedy|Musical        0.000       0.109
+Toy Story (1995)     8             Up (2009)                  Adventure|Animation|Children|Drama        0.712       0.070
+
+=== similar to Matrix, The (1999) ===
+           matched  rank                                                     title                                genres  content_sim  collab_sim
+Matrix, The (1999)     1                               Matrix Reloaded, The (2003) Action|Adventure|Sci-Fi|Thriller|IMAX        0.000       0.121
+Matrix, The (1999)     2                         Terminator 2: Judgment Day (1991)                         Action|Sci-Fi        0.779       0.083
+Matrix, The (1999)     3                                         Fight Club (1999)           Action|Crime|Drama|Thriller        0.000       0.108
+Matrix, The (1999)     4 Lord of the Rings: The Fellowship of the Ring, The (2001)                     Adventure|Fantasy        0.000       0.098
+Matrix, The (1999)     5     Lord of the Rings: The Return of the King, The (2003)        Action|Adventure|Drama|Fantasy        0.000       0.093
+Matrix, The (1999)     6                                    Terminator, The (1984)                Action|Sci-Fi|Thriller        0.844       0.059
+Matrix, The (1999)     7                            Matrix Revolutions, The (2003) Action|Adventure|Sci-Fi|Thriller|IMAX        0.000       0.091
+Matrix, The (1999)     8                 Star Wars: Episode IV - A New Hope (1977)               Action|Adventure|Sci-Fi        0.000       0.087
+
+=== similar to Godfather, The (1972) ===
+              matched  rank                                  title                      genres  content_sim  collab_sim
+Godfather, The (1972)     1         Godfather: Part II, The (1974)                 Crime|Drama        0.985       0.414
+Godfather, The (1972)     2                      Goodfellas (1990)                 Crime|Drama        0.891       0.120
+Godfather, The (1972)     3 One Flew Over the Cuckoo's Nest (1975)                       Drama        0.000       0.094
+Godfather, The (1972)     4       Shawshank Redemption, The (1994)                 Crime|Drama        0.844       0.050
+Godfather, The (1972)     5                  Apocalypse Now (1979)            Action|Drama|War        0.000       0.086
+Godfather, The (1972)     6                Bonnie and Clyde (1967)                 Crime|Drama        0.891       0.040
+Godfather, The (1972)     7                    Pulp Fiction (1994) Comedy|Crime|Drama|Thriller        0.000       0.078
+Godfather, The (1972)     8       Silence of the Lambs, The (1991)       Crime|Horror|Thriller        0.000       0.078
+
+=== cold start: user who only told us 2 films they love ===
+ rank                   title                                    genres  n_ratings
+    1 Edge of Tomorrow (2014)                        Action|Sci-Fi|IMAX      10162
+    2          Gravity (2013)                        Action|Sci-Fi|IMAX       9733
+    3          Elysium (2013)                  Action|Drama|Sci-Fi|IMAX       3899
+    4      Cloud Atlas (2012)                         Drama|Sci-Fi|IMAX       4381
+    5   V for Vendetta (2006)               Action|Sci-Fi|Thriller|IMAX      21734
+    6    Transcendence (2014)                         Drama|Sci-Fi|IMAX       1580
+    7       Iron Man 3 (2013)               Action|Sci-Fi|Thriller|IMAX       6545
+    8          Super 8 (2011)              Mystery|Sci-Fi|Thriller|IMAX       3477
+    9        Contagion (2011)                      Sci-Fi|Thriller|IMAX       1650
+   10         Watchmen (2009) Action|Drama|Mystery|Sci-Fi|Thriller|IMAX       9555

@@ -1,0 +1,191 @@
+{
+  "config": {
+    "ratings": "data/ratings.csv",
+    "movies": "data/movies.csv",
+    "outdir": "artifacts",
+    "resultsdir": "results",
+    "factors": 40,
+    "als_epochs": 8,
+    "implicit_factors": 64,
+    "implicit_epochs": 8,
+    "neighbors": 100,
+    "max_user_history": 250,
+    "eval_pairs": 250000,
+    "eval_users": 1500,
+    "tune_users": 500,
+    "min_movie_ratings": 20
+  },
+  "dataset": {
+    "n_ratings_modelled": 24808223,
+    "n_train": 19984287,
+    "n_val": 2411968,
+    "n_test": 2411968,
+    "n_users": 162414,
+    "n_items": 18430,
+    "density_pct": 0.6676361751274605,
+    "global_mean_rating": 3.554109811782837,
+    "median_ratings_per_user": 57.0,
+    "median_ratings_per_item": 92.5
+  },
+  "rating_prediction": {
+    "global_mean": {
+      "rmse": 1.0569015741348267,
+      "mae": 0.829521894454956,
+      "acc_within_0.5": 0.399024,
+      "acc_within_1.0": 0.68826,
+      "like_accuracy": 0.52724,
+      "like_precision": 0.0,
+      "like_recall": 0.0,
+      "like_f1": 0.0,
+      "n_predictions": 250000
+    },
+    "bias_baseline": {
+      "rmse": 0.8757423758506775,
+      "mae": 0.6627497673034668,
+      "acc_within_0.5": 0.48578,
+      "acc_within_1.0": 0.781568,
+      "like_accuracy": 0.64928,
+      "like_precision": 0.8029189833200953,
+      "like_recall": 0.3421186225568999,
+      "like_f1": 0.4797982794418829,
+      "n_predictions": 250000
+    },
+    "item_item_cf": {
+      "rmse": 0.8727288842201233,
+      "mae": 0.6445379853248596,
+      "acc_within_0.5": 0.512688,
+      "acc_within_1.0": 0.797144,
+      "like_accuracy": 0.696108,
+      "like_precision": 0.778538722404761,
+      "like_recall": 0.49919620949318894,
+      "like_f1": 0.6083320874549945,
+      "n_predictions": 250000
+    },
+    "matrix_factorization": {
+      "rmse": 0.8174976706504822,
+      "mae": 0.6096552610397339,
+      "acc_within_0.5": 0.528092,
+      "acc_within_1.0": 0.81678,
+      "like_accuracy": 0.692792,
+      "like_precision": 0.8209168165746542,
+      "like_recall": 0.44788899230053303,
+      "like_f1": 0.5795679735480503,
+      "n_predictions": 250000
+    },
+    "content_based": {
+      "rmse": 1.0147266387939453,
+      "mae": 0.7836237549781799,
+      "acc_within_0.5": 0.411332,
+      "acc_within_1.0": 0.707292,
+      "like_accuracy": 0.606748,
+      "like_precision": 0.6807230011092321,
+      "like_recall": 0.31673576444707674,
+      "like_f1": 0.43231725977679647,
+      "n_predictions": 250000
+    },
+    "hybrid": {
+      "rmse": 0.8063796758651733,
+      "mae": 0.6051650047302246,
+      "acc_within_0.5": 0.527264,
+      "acc_within_1.0": 0.81928,
+      "like_accuracy": 0.681976,
+      "like_precision": 0.8374742645775901,
+      "like_recall": 0.40611726880446736,
+      "like_f1": 0.546984684109324,
+      "n_predictions": 250000
+    }
+  },
+  "hybrid_ranking_weights": {
+    "ials": 0.45,
+    "mf": 0.15,
+    "itemcf": 0.2,
+    "content": 0.2,
+    "pop": 0.2
+  },
+  "ranking": {
+    "popularity": {
+      "precision@10": 0.023666666666666666,
+      "recall@10": 0.04680684395910728,
+      "ndcg@10": 0.03915404910075871,
+      "map@10": 0.019406662992357434,
+      "hit_rate@10": 0.172,
+      "n_users_evaluated": 1500,
+      "catalogue_coverage": 0.004232230059685296
+    },
+    "content_based": {
+      "precision@10": 0.003466666666666666,
+      "recall@10": 0.007614235505658291,
+      "ndcg@10": 0.006468927480291989,
+      "map@10": 0.0029975501805660537,
+      "hit_rate@10": 0.034666666666666665,
+      "n_users_evaluated": 1500,
+      "catalogue_coverage": 0.12148670645686381
+    },
+    "item_item_cf": {
+      "precision@10": 0.0032000000000000006,
+      "recall@10": 0.008947624984744879,
+      "ndcg@10": 0.005814230920099836,
+      "map@10": 0.0027315873015873013,
+      "hit_rate@10": 0.03,
+      "n_users_evaluated": 1500,
+      "catalogue_coverage": 0.17797069994574063
+    },
+    "matrix_factorization": {
+      "precision@10": 0.007,
+      "recall@10": 0.01688005818022918,
+      "ndcg@10": 0.013761784002467877,
+      "map@10": 0.0076921428571428575,
+      "hit_rate@10": 0.06,
+      "n_users_evaluated": 1500,
+      "catalogue_coverage": 0.06711882799782963
+    },
+    "implicit_als": {
+      "precision@10": 0.04353333333333334,
+      "recall@10": 0.10264530661605181,
+      "ndcg@10": 0.07764287963093384,
+      "map@10": 0.04148608738557151,
+      "hit_rate@10": 0.30466666666666664,
+      "n_users_evaluated": 1500,
+      "catalogue_coverage": 0.06733586543678785
+    },
+    "hybrid": {
+      "precision@10": 0.04706666666666666,
+      "recall@10": 0.11002468249291877,
+      "ndcg@10": 0.08442846576232903,
+      "map@10": 0.044850792600991014,
+      "hit_rate@10": 0.32666666666666666,
+      "n_users_evaluated": 1500,
+      "catalogue_coverage": 0.05860010851871948
+    }
+  },
+  "cold_start_examples": {
+    "Toy Story (1995)": [
+      "Toy Story 2 (1999)",
+      "Antz (1998)",
+      "Toy Story Toons: Small Fry (2011)",
+      "Toy Story Toons: Hawaiian Vacation (2011)",
+      "We're Back! A Dinosaur's Story (1993)"
+    ],
+    "Matrix, The (1999)": [
+      "eXistenZ (1999)",
+      "Virtuosity (1995)",
+      "Timecop (1994)",
+      "Outbreak (1995)",
+      "Nemesis 2: Nebula (1995)"
+    ],
+    "Godfather, The (1972)": [
+      "Godfather: Part II, The (1974)",
+      "Scum (1979)",
+      "Serpico (1973)",
+      "Mean Streets (1973)",
+      "Dirty Money (Un flic) (1972)"
+    ],
+    "Inception (2010)": [
+      "Watchmen (2009)",
+      "Super 8 (2011)",
+      "RoboCop (2014)",
+      "Elysium (2013)",
+      "Fast Five (Fast and the Furious 5, The) (2011)"
+    ]
+  }
+}
