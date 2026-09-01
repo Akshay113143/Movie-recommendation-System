@@ -2,3 +2,5 @@ __pycache__/
 *.pyc
 artifacts/
 data/
+.streamlit/secrets.toml
+.DS_Store

@@ -1,0 +1,26 @@
+{
+  "autoencoder": {
+    "genre_jaccard@10": 0.4265111501924002,
+    "mean_year_gap": 5.27787037037037,
+    "franchise_hit_rate": 0.15713065755764305,
+    "mean_log_popularity": 8.387962341308594
+  },
+  "implicit_als": {
+    "genre_jaccard@10": 0.47064451058201057,
+    "mean_year_gap": 3.245347222222222,
+    "franchise_hit_rate": 0.14005123825789922,
+    "mean_log_popularity": 7.8109259605407715
+  },
+  "item_cf": {
+    "genre_jaccard@10": 0.4523871031746032,
+    "mean_year_gap": 4.855006944444444,
+    "franchise_hit_rate": 0.2220324508966695,
+    "mean_log_popularity": 7.818484783172607
+  },
+  "content": {
+    "genre_jaccard@10": 0.9430335317460318,
+    "mean_year_gap": 7.329037037037036,
+    "franchise_hit_rate": 0.17250213492741248,
+    "mean_log_popularity": 5.606317043304443
+  }
+}

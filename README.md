@@ -101,6 +101,18 @@ movies.csv (62k) ───┘                                              │
                             └─────────────────────────────────────────┘
 ```
 
+### Live app
+
+A Streamlit front end (`streamlit_app.py`) serves the model with TMDB artwork.
+It has three screens: personalised recommendations from a handful of films you
+pick, an item-to-item explorer that exposes where content and collaborative
+similarity disagree, and a methods page. Deployment instructions are in
+[DEPLOYMENT.md](DEPLOYMENT.md).
+
+The deployed app never stores user vectors. A visitor picks a few films and
+their factor vector is solved on the spot by **fold-in** — one 64x64 linear
+system, ~10 ms — which is why the serving bundle is 19.5 MB instead of 586 MB.
+
 ### Repository layout
 
 ```
@@ -108,9 +120,16 @@ recsys/
   data.py            loading, support filtering, index mapping, chronological split
   collaborative.py   BiasBaseline, ItemItemCF, ALSMatrixFactorization, ImplicitALS
   content.py         ContentBasedRecommender (TF-IDF item + user profiles)
+  autoencoder.py     DeepAutoEncoder (NumPy backprop + Adam) + anchor matrix builder
   hybrid.py          HybridRatingModel (stacking), HybridRanker (fusion + switching)
   evaluate.py        RMSE/MAE/tolerance/like-accuracy + P@K/R@K/NDCG@K/MAP@K/coverage
 run_pipeline.py      trains everything, evaluates, writes artifacts + plots
+train_autoencoder.py      trains the autoencoder, runs the ablation
+export_serving_bundle.py  586 MB model.pkl -> 23.8 MB deployable bundle
+streamlit_app.py     web UI (3 tabs: recommend / similar / how it works)
+app/serving.py       fold-in + hybrid scoring at serving time
+app/tmdb.py          TMDB client (posters, cast) with caching + fallback
+app/bundle/          exported item factors, similarity, TF-IDF, catalogue
 recommend.py         serving layer: user recs, similar movies, cold start, explanations
 analysis.py          tolerance curve, error sliced by user history and item popularity
 results/             metrics.json, analysis.json, evaluation.png, demo_output.txt
@@ -277,7 +296,86 @@ signal is left to CF, where it is far more reliable.
 Item-to-item queries are one sparse mat-vec on demand (milliseconds) rather
 than a materialised 18k×18k matrix.
 
-### 3.6 The hybrid / augmented layer
+### 3.6 Deep autoencoder for movie embeddings
+
+A 4-layer masked denoising autoencoder (I-AutoRec style, Sedhain et al. 2015),
+with forward pass, backprop and Adam written from scratch in NumPy — no
+autodiff framework.
+
+```
+input  3,000 anchor-user ratings (mean-centred, sparse)
+        │
+      512  ReLU
+        │
+      128  ← the movie embedding (bottleneck)
+        │
+      512  ReLU
+        │
+output 3,000  reconstruction, masked MSE loss
+```
+
+3,207,224 parameters. 20 epochs, ~6 s/epoch. **Masked validation RMSE 0.666**
+(train 0.556).
+
+**Three details that make or break it:**
+
+1. **Masked loss.** `L = Σ_observed (r − r̂)²`. About 98% of each input vector is
+   unobserved, so without the mask the network's optimal strategy is to output
+   zero everywhere. This one line is the difference between AutoRec and a model
+   that predicts nothing.
+2. **Denoising.** Inputs are randomly zeroed with p = 0.25 (inverted dropout),
+   forcing the network to reconstruct ratings it was not shown — exactly the
+   serving-time task. Without it, it learns an identity map.
+3. **Per-item mean-centring**, so the embedding encodes *who deviates* on this
+   film rather than how popular it is. Popularity is handled elsewhere.
+
+**Why this is not just matrix factorisation again.** ALS learns `q_i` as a free
+parameter per item — 18,430 independent vectors with no function relating them.
+The autoencoder learns an *encoder function* `f(rating profile) → embedding`.
+That makes it non-linear (stacked ReLUs, not a bilinear form), **inductive**
+rather than transductive (a new film gets an embedding from one forward pass,
+no refitting), and parameter-shared, which regularises.
+
+**The embeddings are clearly meaningful.** Nearest neighbours by cosine in the
+128-d space:
+
+| Query | Top neighbours (cosine) |
+|---|---|
+| Pulp Fiction | Reservoir Dogs (0.957), Goodfellas (0.864), Inglourious Basterds (0.842), Kill Bill Vol. 2 (0.840) |
+| Toy Story | Monsters Inc. (0.943), A Bug's Life (0.897), The Incredibles (0.880) |
+| The Shining | Full Metal Jacket (0.842), The Exorcist (0.828), Apocalypse Now (0.803) |
+
+It recovered the Tarantino cluster with **no director, cast or plot data
+anywhere in the input** — purely from who rates what.
+
+### 3.7 Ablation: does the autoencoder improve recommendations?
+
+No, and this is worth stating plainly rather than burying.
+
+| Configuration | NDCG@10 | P@10 |
+|---|---|---|
+| Autoencoder alone | 0.0454 | 0.0258 |
+| Hybrid **without** autoencoder | **0.0844** | **0.0471** |
+| Hybrid **with** autoencoder (w = 0.20) | 0.0842 | 0.0468 |
+
+A validation sweep of the blend weight put the optimum at exactly **0.0**:
+
+| w_ae | 0.00 | 0.05 | 0.10 | 0.20 | 0.30 | 0.50 |
+|---|---|---|---|---|---|---|
+| val NDCG@10 | **0.1023** | 0.1018 | 0.1006 | 0.0998 | 0.0994 | 0.0978 |
+
+The autoencoder is largely **redundant with implicit ALS** — both extract
+collaborative latent structure from the same interaction signal, and iALS does
+it more directly for the ranking objective. On item-to-item similarity quality
+the two are comparable (genre Jaccard@10: 0.427 autoencoder vs 0.471 iALS;
+franchise retrieval 0.157 vs 0.140).
+
+So the production blend **excludes** it, and it powers the "neural" similarity
+mode in the app instead, where the embeddings are genuinely useful. Shipping a
+component that measurably does nothing, and calling it an improvement, would be
+the alternative.
+
+### 3.8 The hybrid / augmented layer
 
 CF and content-based filtering fail in *opposite* situations, which is exactly
 why fusing them works:
@@ -557,6 +655,51 @@ Solving for a single new user's factor vector while holding Q fixed —
 serve a user who rated five films minutes ago without retraining the whole
 model.
 
+**Q: Explain your autoencoder architecture.**
+3,000 → 512 → 128 → 512 → 3,000, ReLU on the hidden layers, linear bottleneck,
+3.2M parameters, trained with masked MSE and Adam — all written in NumPy,
+including the backward pass. The input is a movie's rating vector over 3,000
+anchor users, mean-centred; the 128-unit bottleneck is the embedding. Inputs are
+corrupted with 25% dropout, so it is a denoising autoencoder. Validation masked
+RMSE 0.666.
+
+**Q: Why is the loss masked, and what happens without it?**
+About 98% of every input vector is unobserved. Unmasked, the global optimum is
+to output zero everywhere — the network would score a tiny loss while predicting
+nothing. Masking means unobserved cells receive exactly zero gradient, so the
+model is only ever rewarded for reconstructing ratings that actually exist.
+
+**Q: How is your autoencoder different from matrix factorisation?**
+MF learns a free parameter vector per item with no function connecting items;
+the autoencoder learns an encoder *function* from rating profile to embedding.
+That gives non-linearity (stacked ReLUs vs a bilinear form), inductive
+capability (a new film is embedded by one forward pass rather than refitting),
+and parameter sharing across all 18,430 items, which regularises.
+
+**Q: Did the autoencoder improve your recommendations?**
+No — and I measured rather than assumed. A validation sweep of its blend weight
+found the optimum at 0.0; at weight 0.2 it cost 0.3% NDCG@10. It is redundant
+with implicit ALS, which extracts comparable structure from the same signal more
+directly for the ranking objective. The embeddings are genuinely good — they
+recovered the Tarantino cluster with no director metadata — so I kept the model
+for item-to-item similarity and excluded it from the personalised blend. A
+negative ablation result is still a result; shipping a dead component would have
+been worse.
+
+**Q: Why anchor users instead of the full 162,414-dimensional input?**
+The input layer would need 162,414 × 512 ≈ 83M weights, 333 MB of parameters and
+hours per epoch on one core. The 3,000 most active users hold 27% of all ratings
+in 2% of the columns and already span the taste space; sparse columns contribute
+mostly noise. It is a rank/coverage trade-off made explicitly.
+
+**Q: Why He initialisation and Adam specifically?**
+He init draws from N(0, √(2/fan_in)), scaled to input dimension so activation
+variance stays roughly constant through depth — with N(0, 0.01) a 4-layer net's
+signal decays and early layers barely train. Adam keeps per-parameter running
+averages of the gradient and its square, with bias correction; the adaptive term
+lets one learning rate serve both the dense hidden weights and the output layer,
+whose gradient magnitudes differ by orders of magnitude here.
+
 **Q: What would you do next?**
 Four things, in order of expected value: (1) join TMDB metadata for cast,
 director and plot embeddings — the content model is currently genre-only and is
@@ -588,6 +731,10 @@ this scale, watch what your one-liners materialise.
 - Linden, Smith & York (2003), *Amazon.com Recommendations*, IEEE Internet
   Computing.
 - Burke (2002), *Hybrid Recommender Systems: Survey and Experiments* — the
-  weighted / switching / feature-combination taxonomy used in §3.6.
+  weighted / switching / feature-combination taxonomy used in §3.8.
+- Sedhain, Menon, Sanner & Xie (2015), *AutoRec: Autoencoders Meet
+  Collaborative Filtering*, WWW — the item-autoencoder formulation in §3.6.
+- Liang et al. (2018), *Variational Autoencoders for Collaborative Filtering*,
+  WWW — the denoising/multinomial successor to AutoRec.
 - Harper & Konstan (2015), *The MovieLens Datasets: History and Context*, ACM
   TiiS — cite this if you publish anything using the data.
