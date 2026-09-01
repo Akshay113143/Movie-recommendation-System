@@ -68,7 +68,6 @@ HAS_TMDB = tmdb.get_api_key() is not None
 def movie_card(row, show_why: bool = True, show_sims: bool = False):
     """One poster card. Falls back to a text card when TMDB is unavailable."""
     poster = tmdb.poster_for(row["clean_title"], row.get("year")) if HAS_TMDB else None
-    st.markdown('<div class="movie-card">', unsafe_allow_html=True)
     if poster:
         st.image(poster, use_container_width=True)
     else:
@@ -95,7 +94,6 @@ def movie_card(row, show_why: bool = True, show_sims: bool = False):
     if show_why and row.get("why"):
         st.markdown(f"<div class='why-chip'>{row['why']}</div>",
                     unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
 
 
 def grid(df: pd.DataFrame, cols: int = 4, **kw):
@@ -103,7 +101,7 @@ def grid(df: pd.DataFrame, cols: int = 4, **kw):
         chunk = df.iloc[start:start + cols]
         columns = st.columns(cols)
         for c, (_, row) in zip(columns, chunk.iterrows()):
-            with c:
+            with c.container(border=True):
                 movie_card(row, **kw)
 
 
