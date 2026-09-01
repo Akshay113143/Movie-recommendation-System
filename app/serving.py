@@ -17,6 +17,8 @@ how a production system serves someone who signed up an hour ago.
 
 from __future__ import annotations
 
+import re
+
 import numpy as np
 import pandas as pd
 from scipy import sparse
@@ -70,12 +72,29 @@ class ServingModel:
 
     # ------------------------------------------------------------------ #
     def search(self, query: str, limit: int = 12) -> list[int]:
-        """Substring title search, most-rated matches first."""
+        """Token-based title search, most-rated matches first.
+
+        MovieLens stores comma-inverted titles ('Godfather, The (1972)'), so a
+        plain substring match fails on what users actually type: 'the
+        godfather' (wrong order) and 'god father' (wrong spacing). Matching on
+        stripped tokens handles both; a squashed no-space comparison is the
+        fallback.
+        """
         q = query.strip().lower()
         if not q:
             return []
-        mask = pd.Series(self.titles).str.lower().str.contains(q, regex=False)
+        titles_l = pd.Series(self.titles).str.lower()
+        tokens = [t for t in re.split(r"[^a-z0-9]+", q) if t]
+        if not tokens:
+            return []
+        mask = pd.Series(True, index=titles_l.index)
+        for t in tokens:
+            mask &= titles_l.str.contains(t, regex=False)
         idx = np.flatnonzero(mask.to_numpy())
+        if len(idx) == 0:
+            squashed = titles_l.str.replace(r"[^a-z0-9]", "", regex=True)
+            idx = np.flatnonzero(
+                squashed.str.contains("".join(tokens), regex=False).to_numpy())
         return idx[np.argsort(-self.item_support[idx])][:limit].tolist()
 
     # ------------------------------------------------------------------ #
